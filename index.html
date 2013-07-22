@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Adem ilter - Çekiliş</title>
+
+    <link rel="stylesheet" href="style.css"/>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font: 300 14px/1.5 Helvetica, Arial, sans-serif;
+            color: #444;
+        }
+
+        h1, h2, h3, h4, h5, h6, strong {
+            font-weight: 700;
+        }
+
+        a {
+            text-decoration: none;
+            color: #444;
+        }
+
+        .container {
+            max-width: 450px;
+            width: 90%;
+            margin: 0 auto;
+            padding: 30px 5%;
+        }
+
+        ul {
+            margin: 20px -10px;
+            list-style: none;
+        }
+
+        li {
+            width: 100%;
+            line-height: 23px;
+            height: 23px;
+            clear: both;
+            border-bottom: 1px solid #eee;
+        }
+
+        li:hover {
+            background-color: #eee;
+        }
+
+        li a {
+            float: left;
+            display: block;
+            margin-left: 10px;
+        }
+
+        li strong.point {
+            float: right;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <ul id="sort">
+
+    </ul>
+</div>
+
+
+<script src="jquery.min.js"></script>
+<script src="jquery.tmpl.min.js"></script>
+<script src="jquery.isotope.min.js"></script>
+
+<script id="template" type="text/x-jquery-tmpl">
+    <li data-points="${points}" data-name="${name}" data-id="${id}">
+        <a href="#" title="${name}"><strong>${name}</strong>
+        </a>
+        <strong class="point">${points}</strong>
+    </li>
+</script>
+
+<script>
+    $(function () {
+
+        var $sort = $('#sort');
+        $sort.isotope({
+            itemSelector: 'li',
+            getSortData: {
+                points: function ($elem) {
+                    return parseInt($elem.attr('data-points'), 0);
+                }
+            },
+            sortAscending: false
+        });
+
+        $.ajax("http://119.9.13.143:8080/durum").done(
+                function (data) {
+                    $(data).each(function (index, el) {
+                        $("#template").tmpl(data[index]).appendTo("#sort");
+                    });
+                }
+        );
+
+        setInterval(function () {
+            $.ajax("http://119.9.13.143:8080/durum").done(
+                    function (data) {
+                        $(data).each(function (index, el) {
+                            var id = data[index].id;
+                            var points = data[index].points;
+                            $("#sort li[data-id=" + id + "]").attr("data-points", points).find(".point").html(points);
+                        });
+
+                        $sort.isotope("reloadItems").isotope({sortBy: 'points'});
+                    }
+            );
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>
